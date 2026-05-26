@@ -69,3 +69,16 @@ jobs:
           docker plugin create "$REPO:latest" plugin/
           docker plugin push  "$REPO:latest"
           docker plugin rm -f "$REPO:latest"
+
+      # docker plugin push only ships the OCI artifact; the Docker Hub
+      # repository description and README are separate metadata. Sync them
+      # via Hub's API on tag releases only.
+      - name: Update Docker Hub description
+        if: steps.vars.outputs.push_latest == 'true'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: acul21/gwctr
+          short-description: "Docker network plugin with container-as-gateway (single-host, plain Linux bridge)"
+          readme-filepath: ./README.md
