@@ -56,6 +56,10 @@ jobs:
           TAG="$REPO:$VERSION"
           scripts/build-plugin.sh "$TAG"
           docker plugin push "$TAG"
+          # Release the daemon's hold on this content so we can re-create the
+          # same rootfs under a different tag below. The push to the remote
+          # has already happened.
+          docker plugin rm -f "$TAG"
 
       - name: Also push :latest (on tag releases)
         if: steps.vars.outputs.push_latest == 'true'
@@ -64,3 +68,4 @@ jobs:
           docker plugin rm -f "$REPO:latest" 2>/dev/null || true
           docker plugin create "$REPO:latest" plugin/
           docker plugin push  "$REPO:latest"
+          docker plugin rm -f "$REPO:latest"
