@@ -1,0 +1,66 @@
+name: plugin
+
+# Publishes the managed Docker plugin (NOT the container image) to Docker Hub
+# under the fixed repo acul21/gwctr.
+#
+# Triggers:
+#   - tag push v*     →  pushes acul21/gwctr:<version> and acul21/gwctr:latest
+#   - manual dispatch →  pushes acul21/gwctr:<input-tag>
+#
+# Required repo secrets:
+#   DOCKERHUB_USERNAME   Docker Hub account used for `docker login` (must have
+#                        write access to the acul21/gwctr repository).
+#   DOCKERHUB_TOKEN      Personal access token with read/write/delete.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'plugin tag to publish (e.g. latest, 0.1.0)'
+        required: true
+        default: 'latest'
+
+env:
+  REPO: acul21/gwctr
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.tag }}" >>"$GITHUB_OUTPUT"
+            echo "push_latest=false"         >>"$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >>"$GITHUB_OUTPUT"
+            echo "push_latest=true"                  >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push plugin (versioned tag)
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          set -e
+          TAG="$REPO:$VERSION"
+          scripts/build-plugin.sh "$TAG"
+          docker plugin push "$TAG"
+
+      - name: Also push :latest (on tag releases)
+        if: steps.vars.outputs.push_latest == 'true'
+        run: |
+          set -e
+          docker plugin rm -f "$REPO:latest" 2>/dev/null || true
+          docker plugin create "$REPO:latest" plugin/
+          docker plugin push  "$REPO:latest"
