@@ -1,0 +1,55 @@
+# Internal-mode example.
+#
+# `gwnet-int` is created with `internal: true` so the plugin installs no
+# host-side NAT and gives `gw-router` no default route to the bridge. For the
+# gateway container to provide upstream connectivity for the workloads, it
+# must be DUAL-HOMED: a second network with its own upstream path (here, the
+# default `bridge` driver). gw-router forwards from the internal side to the
+# external side and handles its own MASQUERADE on the external interface.
+#
+# Workloads remain attached only to the internal network.
+
+services:
+  gw-router:
+    image: alpine:3.20
+    container_name: gw-router
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache iptables >/dev/null
+        # NAT from the internal subnet out via the second interface (eth1
+        # here when uplink is the second declared network).
+        iptables -t nat -A POSTROUTING -s 10.99.1.0/24 -o eth1 -j MASQUERADE
+        echo "router ready: forwarding 10.99.1.0/24 -> eth1"
+        tail -f /dev/null
+    networks:
+      gwnet-int:
+        ipv4_address: 10.99.1.2
+      uplink: {}
+
+  workload-a:
+    image: alpine:3.20
+    container_name: workload-a
+    command: ["sh", "-c", "ip route; ping -c 3 1.1.1.1; tail -f /dev/null"]
+    depends_on:
+      - gw-router
+    networks:
+      - gwnet-int
+
+networks:
+  gwnet-int:
+    driver: gwctr
+    internal: true
+    driver_opts:
+      de.acul21.gwctr.gateway_ip: "10.99.1.2"
+    ipam:
+      config:
+        - subnet: 10.99.1.0/24
+          gateway: 10.99.1.1
+  uplink:
+    driver: bridge

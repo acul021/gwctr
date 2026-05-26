@@ -1,4 +1,4 @@
-package gwbridge
+package gwctr
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	optPrefix     = "de.acul21.gwbridge."
+	optPrefix     = "de.acul21.gwctr."
 	OptBridgeName = optPrefix + "bridge_name"
 	OptMTU        = optPrefix + "mtu"
 	OptMode       = optPrefix + "mode"
@@ -26,7 +26,7 @@ const (
 
 	defaultMTU         = 1500
 	defaultMode        = ModeNAT
-	bridgeNamePrefix   = "gwb"
+	bridgeNamePrefix   = "gwctr"
 	bridgeNameMaxBytes = 15
 )
 

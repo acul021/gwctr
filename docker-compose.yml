@@ -1,10 +1,10 @@
 services:
-  gwbridge:
+  gwctr:
     build:
       context: .
       network: host
-    image: gwbridge:latest
-    container_name: gwbridge
+    image: gwctr:latest
+    container_name: gwctr
     restart: unless-stopped
     network_mode: host
     privileged: true

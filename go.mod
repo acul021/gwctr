@@ -1,4 +1,4 @@
-module github.com/acul21/docker-gwbridge
+module github.com/acul21/docker-gwctr
 
 go 1.23
 

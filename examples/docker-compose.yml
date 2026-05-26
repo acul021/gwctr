@@ -39,9 +39,9 @@ services:
 
 networks:
   gwnet:
-    driver: gwbridge
+    driver: gwctr
     driver_opts:
-      de.acul21.gwbridge.gateway_ip: "10.99.0.2"
+      de.acul21.gwctr.gateway_ip: "10.99.0.2"
     ipam:
       config:
         - subnet: 10.99.0.0/24

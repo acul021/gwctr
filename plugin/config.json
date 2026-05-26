@@ -1,0 +1,21 @@
+{
+  "description": "Docker network plugin with container-as-gateway (single-host, plain Linux bridge)",
+  "documentation": "https://github.com/acul21/docker-gwctr",
+  "entrypoint": ["/usr/local/bin/gwctr"],
+  "interface": {
+    "types": ["docker.networkdriver/1.0"],
+    "socket": "gwctr.sock"
+  },
+  "linux": {
+    "capabilities": ["CAP_NET_ADMIN", "CAP_NET_RAW"]
+  },
+  "network": {
+    "type": "host"
+  },
+  "args": {
+    "name": "args",
+    "description": "extra CLI args (e.g. -debug)",
+    "settable": ["value"],
+    "value": []
+  }
+}

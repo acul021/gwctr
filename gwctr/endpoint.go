@@ -1,4 +1,4 @@
-package gwbridge
+package gwctr
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ func vethNames(endpointID string) (host, peer string) {
 	if len(id) > 5 {
 		id = id[:5]
 	}
-	return "gwh" + id, "gwc" + id
+	return "gwctrh" + id, "gwctrp" + id
 }
 
 // createVethPair creates the veth pair, attaches host side to the bridge, and

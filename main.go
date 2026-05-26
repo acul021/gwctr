@@ -7,10 +7,10 @@ import (
 
 	"github.com/docker/go-plugins-helpers/network"
 
-	"github.com/acul21/docker-gwbridge/gwbridge"
+	"github.com/acul21/docker-gwctr/gwctr"
 )
 
-const pluginName = "gwbridge"
+const pluginName = "gwctr"
 
 func main() {
 	debug := flag.Bool("debug", false, "enable debug logging")
@@ -22,7 +22,7 @@ func main() {
 	}
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})))
 
-	d, err := gwbridge.NewDriver()
+	d, err := gwctr.NewDriver()
 	if err != nil {
 		slog.Error("driver init failed", "err", err)
 		os.Exit(1)
