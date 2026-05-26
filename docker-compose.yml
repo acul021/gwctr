@@ -1,0 +1,14 @@
+services:
+  gwbridge:
+    build:
+      context: .
+      network: host
+    image: gwbridge:latest
+    container_name: gwbridge
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    volumes:
+      - /run/docker/plugins:/run/docker/plugins
+      - /lib/modules:/lib/modules:ro
+    command: ["-debug"]

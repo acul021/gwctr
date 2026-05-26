@@ -1,0 +1,48 @@
+services:
+  gw-router:
+    image: alpine:3.20
+    container_name: gw-router
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache iptables >/dev/null
+        iptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE 2>/dev/null \
+          || iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+        echo "router ready, masquerading via eth0"
+        tail -f /dev/null
+    networks:
+      gwnet:
+        ipv4_address: 10.99.0.2
+
+  workload-a:
+    image: alpine:3.20
+    container_name: workload-a
+    command: ["sh", "-c", "ip route; ping -c 3 1.1.1.1; tail -f /dev/null"]
+    depends_on:
+      - gw-router
+    networks:
+      - gwnet
+
+  workload-b:
+    image: alpine:3.20
+    container_name: workload-b
+    command: ["sh", "-c", "ip route; ping -c 3 1.1.1.1; tail -f /dev/null"]
+    depends_on:
+      - gw-router
+    networks:
+      - gwnet
+
+networks:
+  gwnet:
+    driver: gwbridge
+    driver_opts:
+      de.acul21.gwbridge.gateway_ip: "10.99.0.2"
+    ipam:
+      config:
+        - subnet: 10.99.0.0/24
+          gateway: 10.99.0.1
